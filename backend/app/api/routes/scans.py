@@ -27,7 +27,6 @@ def set_websocket_callback(callback):
 async def start_network_discovery(
     scan_request: ScanRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Start a network discovery scan."""
@@ -45,7 +44,7 @@ async def start_network_discovery(
     background_tasks.add_task(
         orchestrator.discover_network,
         scan_request.network,
-        current_user.id,
+        None,  # No user_id required
         scan_request.methods
     )
 
@@ -61,15 +60,11 @@ async def scan_device_ports(
     device_id: int,
     scan_request: DeviceScanRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Start a port scan on a specific device."""
-    # Check if device exists and belongs to user
-    device = db.query(Device).filter(
-        Device.id == device_id,
-        Device.user_id == current_user.id
-    ).first()
+    # Check if device exists
+    device = db.query(Device).filter(Device.id == device_id).first()
 
     if not device:
         raise HTTPException(
@@ -93,7 +88,7 @@ async def scan_device_ports(
         orchestrator.scan_device_ports,
         device_id,
         scan_request.profile,
-        current_user.id
+        None  # No user_id required
     )
 
     return {
@@ -107,14 +102,10 @@ async def scan_device_ports(
 @router.get("/{scan_id}", response_model=ScanResponse)
 async def get_scan(
     scan_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get scan details by ID."""
-    scan = db.query(Scan).filter(
-        Scan.id == scan_id,
-        Scan.user_id == current_user.id
-    ).first()
+    scan = db.query(Scan).filter(Scan.id == scan_id).first()
 
     if not scan:
         raise HTTPException(
@@ -128,14 +119,10 @@ async def get_scan(
 @router.get("/{scan_id}/status", response_model=ScanStatusResponse)
 async def get_scan_status(
     scan_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get scan status and progress."""
-    scan = db.query(Scan).filter(
-        Scan.id == scan_id,
-        Scan.user_id == current_user.id
-    ).first()
+    scan = db.query(Scan).filter(Scan.id == scan_id).first()
 
     if not scan:
         raise HTTPException(
@@ -154,13 +141,10 @@ async def get_scan_status(
 async def list_scans(
     skip: int = 0,
     limit: int = 100,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """List all scans for the current user."""
-    scans = db.query(Scan).filter(
-        Scan.user_id == current_user.id
-    ).order_by(Scan.started_at.desc()).offset(skip).limit(limit).all()
+    """List all scans."""
+    scans = db.query(Scan).order_by(Scan.started_at.desc()).offset(skip).limit(limit).all()
 
     return scans
 
@@ -168,14 +152,10 @@ async def list_scans(
 @router.delete("/{scan_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_scan(
     scan_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete a scan record."""
-    scan = db.query(Scan).filter(
-        Scan.id == scan_id,
-        Scan.user_id == current_user.id
-    ).first()
+    scan = db.query(Scan).filter(Scan.id == scan_id).first()
 
     if not scan:
         raise HTTPException(

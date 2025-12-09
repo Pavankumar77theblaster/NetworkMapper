@@ -18,11 +18,10 @@ async def list_devices(
     status: Optional[str] = Query(None),
     risk_level: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """List all devices with optional filters."""
-    query = db.query(Device).filter(Device.user_id == current_user.id)
+    query = db.query(Device)
 
     # Apply filters
     if status:
@@ -49,14 +48,10 @@ async def list_devices(
 @router.get("/{device_id}", response_model=DeviceResponse)
 async def get_device(
     device_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get device details by ID."""
-    device = db.query(Device).filter(
-        Device.id == device_id,
-        Device.user_id == current_user.id
-    ).first()
+    device = db.query(Device).filter(Device.id == device_id).first()
 
     if not device:
         raise HTTPException(
@@ -71,14 +66,10 @@ async def get_device(
 async def update_device(
     device_id: int,
     device_update: DeviceUpdate,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update device information (tags, notes, risk level, etc.)."""
-    device = db.query(Device).filter(
-        Device.id == device_id,
-        Device.user_id == current_user.id
-    ).first()
+    device = db.query(Device).filter(Device.id == device_id).first()
 
     if not device:
         raise HTTPException(
@@ -100,14 +91,10 @@ async def update_device(
 @router.delete("/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_device(
     device_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete a device."""
-    device = db.query(Device).filter(
-        Device.id == device_id,
-        Device.user_id == current_user.id
-    ).first()
+    device = db.query(Device).filter(Device.id == device_id).first()
 
     if not device:
         raise HTTPException(
@@ -124,14 +111,10 @@ async def delete_device(
 @router.get("/{device_id}/ports", response_model=List[PortResponse])
 async def get_device_ports(
     device_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all ports for a specific device."""
-    device = db.query(Device).filter(
-        Device.id == device_id,
-        Device.user_id == current_user.id
-    ).first()
+    device = db.query(Device).filter(Device.id == device_id).first()
 
     if not device:
         raise HTTPException(

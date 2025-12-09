@@ -5,17 +5,11 @@ class APIClient {
         this.baseURL = CONFIG.API_BASE_URL;
     }
 
-    // Get auth headers
-    getHeaders(includeAuth = true) {
-        const headers = {
+    // Get headers
+    getHeaders() {
+        return {
             'Content-Type': 'application/json'
         };
-
-        if (includeAuth && auth.accessToken) {
-            headers['Authorization'] = `Bearer ${auth.accessToken}`;
-        }
-
-        return headers;
     }
 
     // Generic request method
@@ -23,17 +17,11 @@ class APIClient {
         const url = `${this.baseURL}${endpoint}`;
         const config = {
             ...options,
-            headers: this.getHeaders(options.auth !== false)
+            headers: this.getHeaders()
         };
 
         try {
             const response = await fetch(url, config);
-
-            // Handle 401 Unauthorized
-            if (response.status === 401) {
-                auth.logout();
-                return null;
-            }
 
             // Handle errors
             if (!response.ok) {

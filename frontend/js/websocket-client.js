@@ -9,14 +9,14 @@ class WebSocketClient {
         this.shouldReconnect = true;
     }
 
-    connect(token) {
+    connect() {
         if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
             console.log('WebSocket already connected or connecting');
             return;
         }
 
         this.isConnecting = true;
-        const wsUrl = `${CONFIG.WS_URL}?token=${token}`;
+        const wsUrl = CONFIG.WS_URL;  // No token required
 
         try {
             this.ws = new WebSocket(wsUrl);
@@ -43,7 +43,7 @@ class WebSocketClient {
 
                 if (this.shouldReconnect) {
                     console.log(`Reconnecting in ${this.reconnectInterval / 1000}s...`);
-                    setTimeout(() => this.connect(token), this.reconnectInterval);
+                    setTimeout(() => this.connect(), this.reconnectInterval);
                 }
             };
 

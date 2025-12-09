@@ -28,56 +28,40 @@ async def get_user_from_token(token: str, db: Session) -> User:
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: str = Query(...),
     db: Session = Depends(get_db)
 ):
     """
     WebSocket endpoint for real-time updates.
-
-    Authenticates via JWT token in query parameter: /ws?token=xxx
+    No authentication required - open to all network users.
     """
-    # Authenticate user
-    user = await get_user_from_token(token, db)
-    if not user:
-        await websocket.close(code=1008, reason="Unauthorized")
-        logger.warning("WebSocket connection rejected: Invalid token")
-        return
-
-    if not user.is_active:
-        await websocket.close(code=1008, reason="Inactive user")
-        logger.warning(f"WebSocket connection rejected: User {user.id} is inactive")
-        return
-
-    # Accept connection
-    await ws_manager.connect(websocket, user.id)
-    logger.info(f"WebSocket connection established for user {user.id}")
+    # Accept connection (using a default user ID of 1 for everyone)
+    await ws_manager.connect(websocket, 1)
+    logger.info("WebSocket connection established")
 
     # Send welcome message
     await ws_manager.send_personal_message({
         "type": "connection_established",
         "data": {
-            "message": "Connected to Network Device Mapper",
-            "user_id": user.id,
-            "username": user.username
+            "message": "Connected to Network Device Mapper"
         }
-    }, user.id)
+    }, 1)
 
     try:
         # Keep connection alive and handle incoming messages
         while True:
             data = await websocket.receive_text()
-            logger.debug(f"Received WebSocket message from user {user.id}: {data}")
+            logger.debug(f"Received WebSocket message: {data}")
 
             # Echo back or handle client messages if needed
             # For now, we just keep the connection alive
             # Client messages can be used for ping/pong or commands
 
     except WebSocketDisconnect:
-        ws_manager.disconnect(websocket, user.id)
-        logger.info(f"WebSocket disconnected for user {user.id}")
+        ws_manager.disconnect(websocket, 1)
+        logger.info("WebSocket disconnected")
     except Exception as e:
-        logger.error(f"WebSocket error for user {user.id}: {e}")
-        ws_manager.disconnect(websocket, user.id)
+        logger.error(f"WebSocket error: {e}")
+        ws_manager.disconnect(websocket, 1)
 
 
 # Callback function for scan orchestrator to send updates

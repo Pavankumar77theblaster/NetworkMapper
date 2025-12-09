@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Device Mapper - Dashboard</title>
-    <link rel="stylesheet" href="/css/cyberpunk.css">
-    <link rel="stylesheet" href="/css/animations.css">
+    <link rel="stylesheet" href="/css/simple.css">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
-        <div class="navbar-brand glitch">NETWORK DEVICE MAPPER</div>
-        <div style="display: flex; align-items: center; gap: 2rem;">
-            <span style="color: var(--text-secondary);">Welcome, <span id="username" style="color: var(--neon-cyan);"></span></span>
-            <button id="logoutBtn" class="btn btn-danger">Logout</button>
+        <div class="navbar-brand">Network Device Mapper</div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div id="wsStatusDot" class="status-dot"></div>
+            <span id="wsStatusText" style="font-size: 0.9rem;">Connecting...</span>
         </div>
     </nav>
 

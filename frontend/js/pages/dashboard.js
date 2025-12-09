@@ -1,14 +1,10 @@
 // Dashboard Page Logic
 
-// Check authentication
-auth.redirectIfNotAuth();
-
 // State
 let devices = [];
 let currentScanId = null;
 
 // DOM Elements
-const usernameEl = document.getElementById('username');
 const logoutBtn = document.getElementById('logoutBtn');
 const totalDevicesEl = document.getElementById('totalDevices');
 const activeDevicesEl = document.getElementById('activeDevices');
@@ -31,14 +27,6 @@ const findingsList = document.getElementById('findingsList');
 
 // Initialize
 async function init() {
-    // Set username
-    if (auth.user) {
-        usernameEl.textContent = auth.user.username;
-    } else {
-        await auth.fetchUserInfo();
-        usernameEl.textContent = auth.user?.username || 'User';
-    }
-
     // Connect WebSocket
     connectWebSocket();
 
@@ -52,36 +40,33 @@ async function init() {
 
 // Connect WebSocket
 function connectWebSocket() {
-    if (auth.accessToken) {
-        wsClient.connect(auth.accessToken);
+    wsClient.connect();
 
-        // Subscribe to WebSocket events
-        wsClient.subscribe('connection_established', (data) => {
-            console.log('Connected to WebSocket:', data);
-        });
+    // Subscribe to WebSocket events
+    wsClient.subscribe('connection_established', (data) => {
+        console.log('Connected to WebSocket:', data);
+    });
 
-        wsClient.subscribe('scan_progress', handleScanProgress);
-        wsClient.subscribe('device_discovered', handleDeviceDiscovered);
-        wsClient.subscribe('port_found', handlePortFound);
-        wsClient.subscribe('scan_complete', handleScanComplete);
-        wsClient.subscribe('finding_detected', handleFindingDetected);
+    wsClient.subscribe('scan_progress', handleScanProgress);
+    wsClient.subscribe('device_discovered', handleDeviceDiscovered);
+    wsClient.subscribe('port_found', handlePortFound);
+    wsClient.subscribe('scan_complete', handleScanComplete);
+    wsClient.subscribe('finding_detected', handleFindingDetected);
 
-        // Listen for connection status changes
-        window.addEventListener('wsConnectionChange', (e) => {
-            if (e.detail.isConnected) {
-                wsStatusDot.className = 'status-dot status-up';
-                wsStatusText.textContent = 'Live updates connected';
-            } else {
-                wsStatusDot.className = 'status-dot status-down';
-                wsStatusText.textContent = 'Live updates disconnected - reconnecting...';
-            }
-        });
-    }
+    // Listen for connection status changes
+    window.addEventListener('wsConnectionChange', (e) => {
+        if (e.detail.isConnected) {
+            wsStatusDot.className = 'status-dot status-up';
+            wsStatusText.textContent = 'Live updates connected';
+        } else {
+            wsStatusDot.className = 'status-dot status-down';
+            wsStatusText.textContent = 'Live updates disconnected - reconnecting...';
+        }
+    });
 }
 
 // Setup event listeners
 function setupEventListeners() {
-    logoutBtn.addEventListener('click', () => auth.logout());
     startScanBtn.addEventListener('click', startScan);
     refreshBtn.addEventListener('click', () => loadDevices());
     searchInput.addEventListener('input', filterDevices);
