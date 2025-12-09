@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv:*)",
+      "Bash(venvScriptspip.exe install -r requirements.txt)",
+      "Bash(\"./venv/Scripts/pip.exe\" install -r requirements.txt)",
+      "Bash(\"./venv/Scripts/pip.exe\" install --upgrade pip)",
+      "Bash(\"./venv/Scripts/pip.exe\" install -r requirements-simple.txt --no-cache-dir)",
+      "Bash(timeout 30 bash -c 'tail --pid=$(pgrep -f \"\"pip install\"\") -f /dev/null')",
+      "Bash(\"./venv/Scripts/python.exe\" -m uvicorn:*)",
+      "Bash(python -m http.server:*)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
